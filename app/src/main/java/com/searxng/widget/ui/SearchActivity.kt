@@ -17,7 +17,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -192,8 +192,6 @@ fun ResultsView(
     var webView by remember { mutableStateOf<WebView?>(null) }
 
     val bgColor = if (isDark) Color(0xFF1C1B1F) else Color(0xFFFAFAFA)
-    val toolbarColor = if (isDark) Color(0xFF2D2D2D) else Color(0xFFE8E8E8)
-    val textColor = if (isDark) Color.White else Color(0xFF1C1B1F)
     val webViewBg = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.WHITE
 
     BackHandler(enabled = true) {
@@ -209,43 +207,12 @@ fun ResultsView(
             .fillMaxSize()
             .background(bgColor)
     ) {
-        Row(
+        Spacer(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .background(toolbarColor)
-                .padding(horizontal = 8.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "\u2190",
-                color = textColor,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .clickable {
-                        if (canGoBack) {
-                            webView?.goBack()
-                        } else {
-                            onClose()
-                        }
-                    }
-                    .padding(8.dp)
-            )
-            Text(
-                text = "SearXNG",
-                color = textColor,
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f)
-            )
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(8.dp),
-                    color = textColor,
-                    strokeWidth = 2.dp
-                )
-            }
-        }
+                .background(bgColor)
+        )
 
         Box(modifier = Modifier.fillMaxSize()) {
             AndroidView(
@@ -261,17 +228,6 @@ fun ResultsView(
                                 super.onPageFinished(view, url)
                                 canGoBack = view?.canGoBack() ?: false
                                 isLoading = false
-                                if (isDark) {
-                                    view?.evaluateJavascript(
-                                        """(function(){
-                                            if (document.getElementById('__se_dark')) return;
-                                            var s = document.createElement('style');
-                                            s.id = '__se_dark';
-                                            s.textContent = 'html{filter:invert(1) hue-rotate(180deg)} img,video,iframe,canvas{filter:invert(1) hue-rotate(180deg)}';
-                                            document.documentElement.appendChild(s);
-                                        })()""".trimIndent(), null
-                                    )
-                                }
                             }
                         }
                         webChromeClient = object : WebChromeClient() {
@@ -282,12 +238,18 @@ fun ResultsView(
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         setBackgroundColor(webViewBg)
-                        try {
-                            val method = WebView::class.java.getMethod(
-                                "setForceDark", Integer.TYPE
-                            )
-                            method.invoke(this, if (isDark) 1 else 0)
-                        } catch (_: Exception) { }
+                        if (isDark) {
+                            try {
+                                WebView::class.java.getMethod(
+                                    "setAlgorithmicDarkeningAllowed", Boolean::class.javaPrimitiveType
+                                ).invoke(null, true)
+                            } catch (_: NoSuchMethodException) {
+                                try {
+                                    WebView::class.java.getMethod("setForceDark", Integer.TYPE)
+                                        .invoke(this, 1)
+                                } catch (_: Exception) { }
+                            }
+                        }
                         loadUrl(searchUrl)
                         webView = this
                     }
