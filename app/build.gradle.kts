@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
 
+    implementation(libs.browser)
+
     debugImplementation(libs.compose.ui.tooling)
 
     testImplementation(libs.junit.jupiter)

@@ -19,6 +19,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.SearchActivity"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.SearxngWidget.Translucent"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+
         <receiver
             android:name=".SearxngWidgetReceiver"
             android:exported="true">

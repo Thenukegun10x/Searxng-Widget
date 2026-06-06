@@ -3,11 +3,12 @@ package com.searxng.widget.ui.theme
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.background
 import androidx.glance.layout.Column
+import androidx.glance.layout.ColumnScope
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.unit.dp
 import androidx.glance.layout.padding
 
 object WidgetColors {
@@ -31,7 +32,7 @@ fun isDarkTheme(configuration: Configuration): Boolean {
 @Composable
 fun WidgetBackground(
     isDark: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = GlanceModifier

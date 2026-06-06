@@ -1,5 +1,7 @@
 package com.searxng.widget
 
+import android.appwidget.AppWidgetManager
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -47,7 +49,8 @@ class MainActivity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
+                            .padding(horizontal = 24.dp, vertical = 24.dp)
+                            .navigationBarsPadding(),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
@@ -120,6 +123,16 @@ class MainActivity : ComponentActivity() {
             prefs.setInstanceUrl(normalized)
         }
         prefs.setThemeMode(theme)
+
+        val appWidgetId = intent?.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID
+        ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
+
+        val resultIntent = Intent().apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        setResult(RESULT_OK, resultIntent)
         finish()
     }
 }
