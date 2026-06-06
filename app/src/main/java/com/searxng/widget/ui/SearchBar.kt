@@ -1,5 +1,6 @@
 package com.searxng.widget.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -7,7 +8,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.action.Action
 import androidx.glance.background
 import androidx.glance.appwidget.cornerRadius
-import androidx.glance.appwidget.action.actionSetText
 import androidx.glance.layout.Align
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -19,7 +19,6 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.searxng.widget.SearxngWidget
 
 @Composable
 fun SearchBar(
@@ -30,7 +29,6 @@ fun SearchBar(
 ) {
     val bgColor = if (isDark) Color(0xFF3C3C3C) else Color(0xFFF0F0F0)
     val textColor = if (isDark) Color(0xFFE6E1E5) else Color(0xFF1C1B1F)
-    val hintColor = if (isDark) Color(0xFF888888) else Color(0xFFAAAAAA)
 
     Row(
         modifier = GlanceModifier
@@ -42,7 +40,7 @@ fun SearchBar(
     ) {
         androidx.glance.text.TextField(
             value = query,
-            onValueChange = actionSetText(SearxngWidget.KEY_QUERY),
+            onValueChange = onValueChange,
             placeholder = "Search with SearXNG\u2026",
             style = TextStyle(
                 color = ColorProvider(textColor),

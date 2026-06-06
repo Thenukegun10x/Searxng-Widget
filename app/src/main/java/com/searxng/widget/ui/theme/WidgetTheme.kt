@@ -8,7 +8,7 @@ import androidx.glance.background
 import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.unit.dp
-import androidx.glance.padding
+import androidx.glance.layout.padding
 
 object WidgetColors {
     val primary = Color(0xFF0057B7)

@@ -17,6 +17,7 @@ class WidgetPrefs(private val context: Context) {
     companion object {
         val KEY_INSTANCE_URL = stringPreferencesKey("instance_url")
         val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
+        val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
     }
 
     val instanceUrl: Flow<String?> = context.dataStore.data.map { prefs ->
@@ -38,6 +39,16 @@ class WidgetPrefs(private val context: Context) {
     suspend fun setInstanceUrl(url: String) {
         context.dataStore.edit { prefs ->
             prefs[KEY_INSTANCE_URL] = url
+        }
+    }
+
+    suspend fun getAuthToken(): String? {
+        return context.dataStore.data.first()[KEY_AUTH_TOKEN]
+    }
+
+    suspend fun setAuthToken(token: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_AUTH_TOKEN] = token
         }
     }
 

@@ -6,18 +6,15 @@ import android.net.Uri
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionCallback
 import androidx.glance.action.ActionParameters
-import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
-import com.google.gson.Gson
 import com.searxng.widget.SearxngWidget
+import com.searxng.widget.data.api.AppGson
 import com.searxng.widget.data.repository.SearchRepository
 import com.searxng.widget.preferences.WidgetPrefs
 
 val queryParam = ActionParameters.Key<String>("query")
 
 class SearchActionCallback : ActionCallback {
-
-    private val gson = Gson()
 
     override suspend fun onAction(
         context: Context,
@@ -30,19 +27,27 @@ class SearchActionCallback : ActionCallback {
 
         val prefs = WidgetPrefs(context)
         val instanceUrl = prefs.getInstanceUrl() ?: return
+        val authToken = prefs.getAuthToken()
 
-        val repository = SearchRepository(instanceUrl)
+        updateAppWidgetState(context, glanceId) { state ->
+            state[SearxngWidget.KEY_WIDGET_STATE] = SearxngWidget.STATE_LOADING
+            state[SearxngWidget.KEY_QUERY] = query
+        }
+        SearxngWidget().update(context, glanceId)
+
+        val repository = SearchRepository(instanceUrl, authToken)
         val result = repository.search(query)
 
         updateAppWidgetState(context, glanceId) { state ->
             state[SearxngWidget.KEY_QUERY] = query
             result.onSuccess { results ->
-                state[SearxngWidget.KEY_RESULTS_JSON] = gson.toJson(results)
-            }.onFailure {
-                state[SearxngWidget.KEY_RESULTS_JSON] = ""
+                state[SearxngWidget.KEY_WIDGET_STATE] = SearxngWidget.STATE_RESULTS
+                state[SearxngWidget.KEY_RESULTS_JSON] = AppGson.instance.toJson(results)
+            }.onFailure { error ->
+                state[SearxngWidget.KEY_WIDGET_STATE] = SearxngWidget.STATE_ERROR
+                state[SearxngWidget.KEY_ERROR_MESSAGE] = error.message ?: "Search failed"
             }
         }
-
         SearxngWidget().update(context, glanceId)
     }
 }
@@ -59,8 +64,7 @@ class OpenResultAction : ActionCallback {
         action: String,
         intent: Intent?
     ) {
-        val url = ActionParameters.from(intent)[urlParam]
-            ?: intent?.getStringExtra("url") ?: return
+        val url = ActionParameters.from(intent)[urlParam] ?: return
 
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
