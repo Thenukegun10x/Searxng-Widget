@@ -1,15 +1,50 @@
+# Build
 .gradle/
 build/
 app/build/
-local.properties
-.idea/
-*.iml
-.DS_Store
 *.apk
 *.ap_
+*.aab
+*.aab_
+*.dex
+*.class
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Android / Kotlin
+local.properties
+.kotlin/
+.cxx/
+*.hprof
+*.heap
+*.hprof.gz
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temp / cache / generated
+*.log
+*.tmp
+*.swp
+*.swo
+*~
 *.mhtml
 *.mht
-releases/
 *.zip
+*.tar.gz
+*.tgz
+releases/
+
+# Screenshots
 Screenshot_*.png
 Screenshot_*.jpg
+Screenshot_*.webp
+
+# Gradle wrapper (jar is auto-downloaded)
+!gradle/wrapper/gradle-wrapper.jar
