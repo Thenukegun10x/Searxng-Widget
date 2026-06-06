@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- SearXNG magnifying glass lens -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#3050FF"
+        android:strokeWidth="8"
+        android:pathData="M44,44 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0" />
+    <!-- SearXNG magnifying glass handle -->
+    <path
+        android:fillColor="#3050FF"
+        android:pathData="M66,66 L82,82 A4,4 0 0 1 78,86 L62,70 A4,4 0 0 1 66,66 Z" />
+</vector>
