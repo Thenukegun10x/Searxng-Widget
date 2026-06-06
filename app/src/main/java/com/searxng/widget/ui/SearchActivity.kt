@@ -14,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,7 +26,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -228,6 +226,44 @@ fun ResultsView(
                                 super.onPageFinished(view, url)
                                 canGoBack = view?.canGoBack() ?: false
                                 isLoading = false
+                                if (isDark) {
+                                    view?.evaluateJavascript("""
+(function(){
+if(document.getElementById('__se_dark'))return;
+var bg=getComputedStyle(document.body).backgroundColor;
+var m=bg.match(/\d+/g);
+if(!m)return;
+var l=parseInt(m[0])*299+parseInt(m[1])*587+parseInt(m[2])*114;
+if(l>150000){
+var s=document.createElement('style');
+s.id='__se_dark';
+s.textContent=[
+'html{background:#121212!important}',
+'body{background:#121212!important;color:#e0e0e0!important}',
+'.result,.result-default{background:#1e1e1e!important;border-color:#333!important}',
+'.result a,.result h3 a{color:#8ab4f8!important}',
+'.result .content{color:#c0c0c0!important}',
+'.url_wrapper,.url_i1,.url_o1{color:#7aa2f7!important}',
+'#search_header{background:#1e1e1e!important}',
+'.category_button{color:#e0e0e0!important}',
+'.category_button.selected{background:#333!important}',
+'input#q{background:#2a2a2a!important;color:#e0e0e0!important;border-color:#444!important}',
+'.search_filters select{background:#2a2a2a!important;color:#e0e0e0!important;border-color:#444!important}',
+'footer{background:#121212!important}',
+'.sidebar-collapsible{background:#1e1e1e!important;color:#e0e0e0!important}',
+'#links_on_top a{color:#8ab4f8!important}',
+'.suggestion{color:#8ab4f8!important}',
+'.highlight{color:#ffd54f!important}',
+'.engines span{color:#888!important}',
+'.engine-stats{color:#c0c0c0!important}',
+'.selectable_url pre{background:#2a2a2a!important;color:#c0c0c0!important}',
+'.cache_link{color:#7aa2f7!important}'
+].join('');
+document.head.appendChild(s);
+}
+})();
+""".trimIndent(), null)
+                                }
                             }
                         }
                         webChromeClient = object : WebChromeClient() {
@@ -238,18 +274,6 @@ fun ResultsView(
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         setBackgroundColor(webViewBg)
-                        if (isDark) {
-                            try {
-                                WebView::class.java.getMethod(
-                                    "setAlgorithmicDarkeningAllowed", Boolean::class.javaPrimitiveType
-                                ).invoke(null, true)
-                            } catch (_: NoSuchMethodException) {
-                                try {
-                                    WebView::class.java.getMethod("setForceDark", Integer.TYPE)
-                                        .invoke(this, 1)
-                                } catch (_: Exception) { }
-                            }
-                        }
                         loadUrl(searchUrl)
                         webView = this
                     }
