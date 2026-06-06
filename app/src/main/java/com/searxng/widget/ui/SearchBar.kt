@@ -19,7 +19,6 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.searxng.widget.ui.SearchActivity
 
 @Composable
 fun SearchBar(isDark: Boolean, isCompact: Boolean = false) {
@@ -31,7 +30,7 @@ fun SearchBar(isDark: Boolean, isCompact: Boolean = false) {
             .fillMaxWidth()
             .background(bgColor)
             .cornerRadius(24.dp)
-            .padding(horizontal = if (isCompact) 10.dp else 16.dp, vertical = 10.dp)
+            .padding(horizontal = if (isCompact) 12.dp else 20.dp, vertical = 14.dp)
             .clickable(
                 actionStartActivity<SearchActivity>()
             ),
@@ -40,7 +39,7 @@ fun SearchBar(isDark: Boolean, isCompact: Boolean = false) {
         if (!isCompact) {
             Text(
                 text = "\uD83D\uDD0D",
-                style = TextStyle(fontSize = 14.sp)
+                style = TextStyle(fontSize = 16.sp)
             )
             Spacer(modifier = GlanceModifier.width(10.dp))
         }

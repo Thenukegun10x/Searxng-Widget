@@ -9,4 +9,5 @@
     android:configure="com.searxng.widget.MainActivity"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:description="@string/widget_description" />
+    android:description="@string/widget_description"
+    android:previewImage="@drawable/widget_preview" />

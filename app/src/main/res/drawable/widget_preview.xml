@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="80dp"
+    android:viewportWidth="250"
+    android:viewportHeight="80">
+
+    <!-- Pill-shaped search bar background -->
+    <path
+        android:fillColor="#F0F0F0"
+        android:pathData="M22,40 C22,27 31,18 44,18 L206,18 C219,18 228,27 228,40 C228,53 219,62 206,62 L44,62 C31,62 22,53 22,40 Z" />
+
+    <!-- SearXNG magnifying glass lens -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#3050FF"
+        android:strokeWidth="4"
+        android:pathData="M56,36 m-12,0 a12,12 0 1,1 24,0 a12,12 0 1,1 -24,0" />
+
+    <!-- SearXNG magnifying glass handle -->
+    <path
+        android:fillColor="#3050FF"
+        android:pathData="M66,46 L74,54 A2,2 0 0 1 72,56 L64,48 A2,2 0 0 1 66,46 Z" />
+
+    <!-- Text placeholder line 1 -->
+    <path
+        android:fillColor="#999999"
+        android:pathData="M95,34 L172,34 C175,34 177,36 177,38 C177,40 175,42 172,42 L95,42 C92,42 90,40 90,38 C90,36 92,34 95,34 Z" />
+
+    <!-- Text placeholder line 2 -->
+    <path
+        android:fillColor="#BBBBBB"
+        android:pathData="M95,46 L148,46 C150,46 152,47.5 152,49 C152,50.5 150,52 148,52 L95,52 C93,52 91,50.5 91,49 C91,47.5 93,46 95,46 Z" />
+
+    <!-- Play arrow on the right -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#0057B7"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M201,31 L218,40 L201,49" />
+</vector>
