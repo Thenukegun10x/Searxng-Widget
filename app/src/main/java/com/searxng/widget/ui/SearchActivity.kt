@@ -192,6 +192,8 @@ fun ResultsView(
     var webView by remember { mutableStateOf<WebView?>(null) }
 
     val bgColor = if (isDark) Color(0xFF1C1B1F) else Color(0xFFFAFAFA)
+    val toolbarColor = if (isDark) Color(0xFF2D2D2D) else Color(0xFFE8E8E8)
+    val textColor = if (isDark) Color.White else Color(0xFF1C1B1F)
     val webViewBg = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.WHITE
 
     BackHandler(enabled = true) {
@@ -202,56 +204,107 @@ fun ResultsView(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(bgColor)
     ) {
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                            super.onPageStarted(view, url, favicon)
-                            canGoBack = view?.canGoBack() ?: false
-                        }
-
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            canGoBack = view?.canGoBack() ?: false
-                            isLoading = false
-                        }
-                    }
-                    webChromeClient = object : WebChromeClient() {
-                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                            progress = newProgress
-                        }
-                    }
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    setBackgroundColor(webViewBg)
-                    try {
-                        val method = WebView::class.java.getMethod(
-                            "setForceDark", Integer.TYPE
-                        )
-                        method.invoke(this, if (isDark) 1 else 0)
-                    } catch (_: Exception) { }
-                    loadUrl(searchUrl)
-                    webView = this
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        if (isLoading && progress > 0) {
-            LinearProgressIndicator(
-                progress = { progress / 100f },
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .background(toolbarColor)
+                .padding(horizontal = 8.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "\u2190",
+                color = textColor,
+                fontSize = 20.sp,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter),
-                color = Color(0xFF0057B7),
-                trackColor = Color.Transparent,
+                    .clickable {
+                        if (canGoBack) {
+                            webView?.goBack()
+                        } else {
+                            onClose()
+                        }
+                    }
+                    .padding(8.dp)
             )
+            Text(
+                text = "SearXNG",
+                color = textColor,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(8.dp),
+                    color = textColor,
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                super.onPageStarted(view, url, favicon)
+                                canGoBack = view?.canGoBack() ?: false
+                            }
+
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                super.onPageFinished(view, url)
+                                canGoBack = view?.canGoBack() ?: false
+                                isLoading = false
+                                if (isDark) {
+                                    view?.evaluateJavascript(
+                                        """(function(){
+                                            if (document.getElementById('__se_dark')) return;
+                                            var s = document.createElement('style');
+                                            s.id = '__se_dark';
+                                            s.textContent = 'html{filter:invert(1) hue-rotate(180deg)} img,video,iframe,canvas{filter:invert(1) hue-rotate(180deg)}';
+                                            document.documentElement.appendChild(s);
+                                        })()""".trimIndent(), null
+                                    )
+                                }
+                            }
+                        }
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                progress = newProgress
+                            }
+                        }
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        setBackgroundColor(webViewBg)
+                        try {
+                            val method = WebView::class.java.getMethod(
+                                "setForceDark", Integer.TYPE
+                            )
+                            method.invoke(this, if (isDark) 1 else 0)
+                        } catch (_: Exception) { }
+                        loadUrl(searchUrl)
+                        webView = this
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+
+            if (isLoading && progress > 0) {
+                LinearProgressIndicator(
+                    progress = { progress / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter),
+                    color = Color(0xFF0057B7),
+                    trackColor = Color.Transparent,
+                )
+            }
         }
     }
 }
