@@ -33,7 +33,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -358,26 +357,6 @@ fun SearxngResultsView(
             },
             modifier = Modifier.fillMaxSize()
         )
-
-        IconButton(
-            onClick = {
-                if (webView?.canGoBack() == true) {
-                    webView?.goBack()
-                } else {
-                    onBack()
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 12.dp, start = 4.dp)
-                .size(40.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = null,
-                tint = if (isDark) Color.White else Color.Black
-            )
-        }
 
         if (isLoading && progress > 0) {
             LinearProgressIndicator(
