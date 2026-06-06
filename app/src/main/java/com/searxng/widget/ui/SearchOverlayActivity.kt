@@ -1,13 +1,19 @@
 package com.searxng.widget.ui
 
-import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,10 +33,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -39,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.searxng.widget.preferences.WidgetPrefs
 
 class SearchOverlayActivity : ComponentActivity() {
@@ -62,58 +72,77 @@ class SearchOverlayActivity : ComponentActivity() {
 
         setContent {
             var instanceUrl by remember { mutableStateOf<String?>(null) }
+            var themeMode by remember { mutableStateOf(WidgetPrefs.ThemeMode.SYSTEM) }
             var loaded by remember { mutableStateOf(false) }
-            val isDark = isSystemInDarkTheme()
+            var showResults by remember { mutableStateOf(false) }
+            var searchUrl by remember { mutableStateOf("") }
+            var query by remember { mutableStateOf("") }
+            var selectedCategory by remember { mutableStateOf("general") }
 
             LaunchedEffect(Unit) {
-                instanceUrl = WidgetPrefs(this@SearchOverlayActivity).getInstanceUrl()
+                val prefs = WidgetPrefs(this@SearchOverlayActivity)
+                instanceUrl = prefs.getInstanceUrl()
+                themeMode = prefs.getThemeMode()
                 loaded = true
             }
 
-            val scrimColor = if (isDark) Color(0xE61E1E22) else Color(0xE6F2F5F8)
-            val accent = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF)
+            val isDark = when (themeMode) {
+                WidgetPrefs.ThemeMode.LIGHT -> false
+                WidgetPrefs.ThemeMode.DARK -> true
+                WidgetPrefs.ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(scrimColor)
-                    .clickable(
-                        onClick = { finish() },
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    )
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                if (!loaded) {
+            if (!loaded) {
+                val accent = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(if (isDark) Color(0xE61E1E22) else Color(0xE6F2F5F8)),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(
                         color = accent,
                         modifier = Modifier.size(32.dp),
                         strokeWidth = 2.dp
                     )
-                } else if (instanceUrl == null) {
-                    LaunchedEffect(Unit) { finish() }
-                } else {
+                }
+            } else if (instanceUrl == null) {
+                LaunchedEffect(Unit) { finish() }
+            } else if (showResults) {
+                SearxngResultsView(
+                    searchUrl = searchUrl,
+                    isDark = isDark,
+                    onBack = { showResults = false }
+                )
+            } else {
+                val scrimColor = if (isDark) Color(0xE61E1E22) else Color(0xE6F2F5F8)
+                val accent = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(scrimColor)
+                        .clickable(
+                            onClick = { finish() },
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 24.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
                     SearchOverlayContent(
                         instanceUrl = instanceUrl!!,
                         isDark = isDark,
-                        onSearch = { query, category ->
+                        query = query,
+                        onQueryChange = { query = it },
+                        selectedCategory = selectedCategory,
+                        onCategoryChange = { selectedCategory = it },
+                        onSearch = { q, cat ->
                             val baseUrl = instanceUrl!!.trimEnd('/')
-                            val searchUrl = "$baseUrl/search?q=${Uri.encode(query)}&categories=$category"
-                            val customTabsIntent = CustomTabsIntent.Builder()
-                                .setShowTitle(true)
-                                .setColorScheme(
-                                    if (isDark) CustomTabsIntent.COLOR_SCHEME_DARK
-                                    else CustomTabsIntent.COLOR_SCHEME_LIGHT
-                                )
-                                .build()
-                            customTabsIntent.launchUrl(
-                                this@SearchOverlayActivity,
-                                Uri.parse(searchUrl)
-                            )
-                            finish()
+                            searchUrl = "$baseUrl/search?q=${Uri.encode(q)}&categories=$cat"
+                            showResults = true
                         }
                     )
                 }
@@ -126,6 +155,10 @@ class SearchOverlayActivity : ComponentActivity() {
 fun SearchOverlayContent(
     instanceUrl: String,
     isDark: Boolean,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    selectedCategory: String,
+    onCategoryChange: (String) -> Unit,
     onSearch: (query: String, category: String) -> Unit
 ) {
     val searchBg = if (isDark) Color(0xFF2B2E36) else Color(0xFFFFFFFF)
@@ -135,8 +168,6 @@ fun SearchOverlayContent(
     val placeholderColor = Color(0xFF888888)
     val titleColor = if (isDark) Color.White else Color.Black
 
-    var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("general") }
     val focusRequester = remember { FocusRequester() }
     val categories = listOf(
         "general", "images", "videos", "news",
@@ -167,7 +198,7 @@ fun SearchOverlayContent(
 
         OutlinedTextField(
             value = query,
-            onValueChange = { query = it },
+            onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester),
@@ -225,7 +256,7 @@ fun SearchOverlayContent(
                     isSelected = category == selectedCategory,
                     isDark = isDark,
                     accent = accent,
-                    onClick = { selectedCategory = category }
+                    onClick = { onCategoryChange(category) }
                 )
             }
         }
@@ -260,5 +291,101 @@ fun CategoryChip(
             fontSize = 12.sp,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
+    }
+}
+
+@Composable
+fun SearxngResultsView(
+    searchUrl: String,
+    isDark: Boolean,
+    onBack: () -> Unit
+) {
+    var isLoading by remember { mutableStateOf(true) }
+    var progress by remember { mutableIntStateOf(0) }
+    var webView by remember { mutableStateOf<WebView?>(null) }
+    val bgColor = if (isDark) Color(0xFF1C1B1F) else Color(0xFFFAFAFA)
+
+    BackHandler(enabled = true) {
+        if (webView?.canGoBack() == true) {
+            webView?.goBack()
+        } else {
+            onBack()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgColor)
+    ) {
+        AndroidView(
+            factory = { context ->
+                WebView(context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                            progress = 0
+                            isLoading = true
+                        }
+
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            isLoading = false
+                        }
+                    }
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                            progress = newProgress
+                        }
+                    }
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                    if (isDark && Build.VERSION.SDK_INT >= 29) {
+                        @Suppress("DEPRECATION")
+                        settings.forceDark = WebSettings.FORCE_DARK_ON
+                    }
+                    setBackgroundColor(
+                        if (isDark) AndroidColor.BLACK else AndroidColor.WHITE
+                    )
+                    loadUrl(searchUrl)
+                    webView = this
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        IconButton(
+            onClick = {
+                if (webView?.canGoBack() == true) {
+                    webView?.goBack()
+                } else {
+                    onBack()
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 12.dp, start = 4.dp)
+                .size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = null,
+                tint = if (isDark) Color.White else Color.Black
+            )
+        }
+
+        if (isLoading && progress > 0) {
+            LinearProgressIndicator(
+                progress = { progress / 100f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                color = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF),
+                trackColor = Color.Transparent
+            )
+        }
     }
 }

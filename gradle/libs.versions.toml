@@ -12,7 +12,6 @@ junit = "5.11.4"
 mockk = "1.13.14"
 kotest = "5.9.1"
 core-ktx = "1.15.0"
-browser = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -35,7 +34,6 @@ junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform
 glance-testing = { group = "androidx.glance", name = "glance-testing", version.ref = "glance" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
