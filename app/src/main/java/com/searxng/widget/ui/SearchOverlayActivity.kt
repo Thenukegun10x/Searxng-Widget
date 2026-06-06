@@ -317,6 +317,8 @@ fun SearxngResultsView(
         modifier = Modifier
             .fillMaxSize()
             .background(bgColor)
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
         AndroidView(
             factory = { context ->

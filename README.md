@@ -1,12 +1,12 @@
 # SearXNG Widget
 
-A homescreen widget for Android that puts SearXNG search right on your desktop. Tap the widget, type your query, and it opens in Chrome Custom Tabs. No extra apps, no distractions.
+A homescreen widget for Android that puts SearXNG search right on your desktop. Tap the widget, type your query, and results load in an in-app WebView — no Chrome, no browser swap, just SearXNG.
 
 ## What it does
 
-This is basically a single-purpose widget: one tap, one search bar, straight to your SearXNG instance. I got tired of opening my browser, typing the URL, waiting for the page to load, and *then* typing my search. Now I just tap the widget and go.
+This is basically a single-purpose widget: one tap, one search bar, straight to your SearXNG instance. I got tired of opening a browser, typing the URL, waiting for the page to load, and *then* typing my search. Now I just tap the widget and go.
 
-It'll keep whatever SearXNG instance you configure — public one, your own self-hosted one, doesn't matter.
+It'll keep whatever SearXNG instance you configure — public one, your own self-hosted one, doesn't matter. And since results open in a WebView inside the app, you're never touching Chrome or any other browser at all.
 
 ## How it looks
 
@@ -17,7 +17,9 @@ The widget itself is just a search pill on your homescreen. Tapping it brings up
 - Category chips underneath (General, Images, Videos, etc.)
 - Your instance URL as a subtle hint
 
-It works in light and dark mode — the widget picks up your system theme automatically.
+Hit search and the overlay transitions to a full-screen WebView showing your results. Press back to return to the search bar with your query still intact.
+
+It works in light and dark mode — the overlay respects your saved theme preference (System/Light/Dark), and the WebView gets dark mode treatment too.
 
 ## Installing
 
@@ -44,16 +46,15 @@ Built because I wanted to see if Jetpack Glance could actually work for somethin
 
 - Kotlin 2.0+ / Jetpack Glance 1.1+ for the widget
 - Compose + Material3 for the overlay/search UI
-- Chrome Custom Tabs for opening results (faster than a full browser)
+- In-app WebView for search results (no browser, no Chrome — it's SearXNG, after all)
 - DataStore for preferences
 - Retrofit + OkHttp for the API layer (built but not wired into the widget yet — future todo)
 
 ## Things that could be better
 
-- The search results open in Custom Tabs, not in-app. Some people prefer a WebView, but Custom Tabs feels snappier.
-- No search history or recent searches in the widget (Glance doesn't make that easy).
-- The category tabs look nice but aren't saved per-search.
-- API layer exists but isn't connected to the widget UI yet — I wanted to get the UX right first.
+- No search history or recent searches in the widget (Glance doesn't make that easy)
+- The category tabs look nice but aren't saved per-search
+- API layer exists but isn't connected to the widget UI yet — I wanted to get the UX right first
 
 ## License
 
