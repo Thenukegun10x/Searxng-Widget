@@ -4,9 +4,10 @@ import com.searxng.widget.data.model.SearchResult
 import com.searxng.widget.data.model.SearchResponse
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class SearxngApiTest {
@@ -14,7 +15,7 @@ class SearxngApiTest {
     private val api: SearxngApi = mockk()
 
     @Test
-    fun `search returns results on success`() {
+    fun `SearxngApi_search_returnsResultsOnSuccess`() = runTest {
         val expectedResponse = SearchResponse(
             query = "test",
             results = listOf(
@@ -30,10 +31,7 @@ class SearxngApiTest {
                     parsedUrl = null
                 )
             ),
-            answers = emptyList(),
-            infoboxes = emptyList(),
-            suggestions = listOf("suggestion1"),
-            unresponsiveEngines = null
+            suggestions = listOf("suggestion1")
         )
 
         coEvery { api.search(query = "test") } returns expectedResponse
@@ -42,7 +40,6 @@ class SearxngApiTest {
 
         assertSoftly {
             response.query shouldBe "test"
-            response.results shouldNotBe null
             response.results.size shouldBe 1
             response.results[0].title shouldBe "Test Title"
             response.results[0].url shouldBe "https://example.com"
@@ -51,14 +48,11 @@ class SearxngApiTest {
     }
 
     @Test
-    fun `search returns empty results when no matches`() {
+    fun `SearxngApi_search_returnsEmptyResultsWhenNoMatches`() = runTest {
         val emptyResponse = SearchResponse(
             query = "nonexistent",
             results = emptyList(),
-            answers = emptyList(),
-            infoboxes = emptyList(),
-            suggestions = emptyList(),
-            unresponsiveEngines = null
+            suggestions = emptyList()
         )
 
         coEvery { api.search(query = "nonexistent") } returns emptyResponse
@@ -70,12 +64,29 @@ class SearxngApiTest {
     }
 
     @Test
-    fun `search handles categories and language parameters`() {
-        coEvery { api.search(any(), any(), any(), any(), any(), any()) } returns mockk()
+    fun `SearxngApi_search_handlesCategoriesAndLanguageParameters`() = runTest {
+        val expectedResponse = SearchResponse(
+            query = "test",
+            results = listOf(
+                SearchResult(
+                    title = "Image Result",
+                    url = "https://example.com/img",
+                    content = null,
+                    engine = "google images",
+                    category = "images",
+                    publishedDate = null,
+                    thumbnail = null,
+                    imgSrc = null,
+                    parsedUrl = null
+                )
+            )
+        )
 
-        api.search(query = "test", categories = "images", language = "en")
+        coEvery { api.search(query = "test", categories = "images", language = "en") } returns expectedResponse
 
-        // Verify the API was called with correct params
-        io.mockk.verify { api.search(query = "test", categories = "images", language = "en") }
+        val response = api.search(query = "test", categories = "images", language = "en")
+
+        response.results[0].category shouldBe "images"
+        coVerify { api.search(query = "test", categories = "images", language = "en") }
     }
 }

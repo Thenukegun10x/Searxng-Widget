@@ -5,11 +5,11 @@ import com.google.gson.annotations.SerializedName
 data class SearchResponse(
     val query: String,
     val results: List<SearchResult>,
-    val answers: List<String>?,
-    val infoboxes: List<Infobox>?,
-    val suggestions: List<String>?,
+    val answers: List<String> = emptyList(),
+    val infoboxes: List<Infobox> = emptyList(),
+    val suggestions: List<String> = emptyList(),
     @SerializedName("unresponsive_engines")
-    val unresponsiveEngines: List<EngineInfo>?
+    val unresponsiveEngines: List<EngineInfo> = emptyList()
 )
 
 data class SearchResult(

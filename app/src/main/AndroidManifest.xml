@@ -22,10 +22,10 @@
         </activity>
 
         <activity
-            android:name=".ui.SearchActivity"
+            android:name=".ui.SearchOverlayActivity"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.SearxngWidget.Translucent"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
+            android:theme="@style/Theme.SearxngWidget.Overlay"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
 
         <receiver
             android:name=".SearxngWidgetReceiver"

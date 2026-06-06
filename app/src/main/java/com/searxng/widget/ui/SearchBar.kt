@@ -21,42 +21,50 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 
 @Composable
-fun SearchBar(isDark: Boolean, isCompact: Boolean = false) {
-    val bgColor = if (isDark) Color(0xFF3C3C3C) else Color(0xFFF0F0F0)
-    val textColor = if (isDark) Color(0xFFE6E1E5) else Color(0xFF1C1B1F)
+fun SearchBar(instanceUrl: String, isDark: Boolean, isCompact: Boolean = false) {
+    // Colors extracted from MHTML CSS variables
+    val searchBg = if (isDark) Color(0xFF2B2E36) else Color(0xFFFFFFFF)
+    val placeholderColor = if (isDark) Color(0xFF888888) else Color(0xFF888888)
+    val accent = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF)
 
     Row(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .background(bgColor)
+            .background(searchBg)
             .cornerRadius(24.dp)
-            .padding(horizontal = if (isCompact) 12.dp else 20.dp, vertical = 14.dp)
+            .padding(
+                horizontal = if (isCompact) 12.dp else 16.dp,
+                vertical = if (isCompact) 10.dp else 12.dp
+            )
             .clickable(
-                actionStartActivity<SearchActivity>()
+                actionStartActivity<SearchOverlayActivity>()
             ),
         verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
-        if (!isCompact) {
-            Text(
-                text = "\uD83D\uDD0D",
-                style = TextStyle(fontSize = 16.sp)
-            )
-            Spacer(modifier = GlanceModifier.width(10.dp))
-        }
+        // Magnifying glass icon (using Unicode)
         Text(
-            text = if (isCompact) "SearXNG" else "Search with SearXNG\u2026",
-            style = TextStyle(
-                color = ColorProvider(textColor),
-                fontSize = 13.sp
-            ),
+            text = "\uD83D\uDD0D",
+            style = TextStyle(fontSize = 16.sp)
         )
-        Spacer(modifier = GlanceModifier.width(6.dp))
+        Spacer(modifier = GlanceModifier.width(8.dp))
+
+        // Placeholder text matching SearXNG
+        Text(
+            text = "Search for...",
+            style = TextStyle(
+                color = ColorProvider(placeholderColor),
+                fontSize = if (isCompact) 13.sp else 14.sp
+            ),
+            modifier = GlanceModifier.defaultWeight()
+        )
+
+        // Submit arrow indicator
         Text(
             text = "\u25B6",
             style = TextStyle(
-                color = ColorProvider(Color(0xFF0057B7)),
+                color = ColorProvider(accent),
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp
+                fontSize = 14.sp
             )
         )
     }

@@ -54,7 +54,7 @@ class SearxngWidget : GlanceAppWidget() {
             if (instanceUrl.isNullOrBlank()) {
                 UnconfiguredState(isDark, isCompact)
             } else {
-                ReadyState(isDark, isCompact)
+                ReadyState(instanceUrl = instanceUrl, isDark = isDark, isCompact = isCompact)
             }
         }
     }
@@ -77,33 +77,31 @@ class SearxngWidget : GlanceAppWidget() {
                     fontSize = if (isCompact) 13.sp else 16.sp
                 )
             )
-            if (!isCompact) {
-                Spacer(modifier = GlanceModifier.height(6.dp))
-                Text(
-                    text = "Tap to configure",
-                    style = TextStyle(
-                        color = ColorProvider(
-                            if (isDark) WidgetColors.onSurfaceDark else WidgetColors.onSurfaceLight
-                        ),
-                        fontSize = 12.sp
+            Spacer(modifier = GlanceModifier.height(6.dp))
+            Text(
+                text = "Tap to configure",
+                style = TextStyle(
+                    color = ColorProvider(
+                        if (isDark) WidgetColors.onSurfaceDark else WidgetColors.onSurfaceLight
                     ),
-                    modifier = GlanceModifier.clickable(
-                        actionStartActivity<MainActivity>()
-                    )
+                    fontSize = if (isCompact) 10.sp else 12.sp
+                ),
+                modifier = GlanceModifier.clickable(
+                    actionStartActivity<MainActivity>()
                 )
-            }
+            )
         }
     }
 
     @Composable
-    private fun ReadyState(isDark: Boolean, isCompact: Boolean) {
+    private fun ReadyState(instanceUrl: String, isDark: Boolean, isCompact: Boolean) {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .padding(6.dp),
             verticalAlignment = Alignment.Vertical.CenterVertically
         ) {
-            SearchBar(isDark = isDark, isCompact = isCompact)
+            SearchBar(instanceUrl = instanceUrl, isDark = isDark, isCompact = isCompact)
         }
     }
 }

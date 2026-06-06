@@ -1,6 +1,7 @@
 package com.searxng.widget
 
 import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.searxng.widget.preferences.WidgetPrefs
 import kotlinx.coroutines.launch
 
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
             var instanceUrl by remember { mutableStateOf("") }
             var selectedTheme by remember { mutableStateOf(WidgetPrefs.ThemeMode.SYSTEM) }
+            var urlError by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
                 instanceUrl = prefs.getInstanceUrl() ?: ""
@@ -61,9 +64,16 @@ class MainActivity : ComponentActivity() {
 
                         OutlinedTextField(
                             value = instanceUrl,
-                            onValueChange = { instanceUrl = it },
+                            onValueChange = {
+                                instanceUrl = it
+                                urlError = false
+                            },
                             label = { Text("Instance URL") },
                             placeholder = { Text("https://searxng.example.com") },
+                            isError = urlError,
+                            supportingText = if (urlError) {
+                                { Text("Enter a valid URL starting with http:// or https://") }
+                            } else null,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Uri,
@@ -72,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             keyboardActions = KeyboardActions(
                                 onDone = {
                                     scope.launch {
-                                        saveAndClose(prefs, instanceUrl, selectedTheme)
+                                        saveIfValid(prefs, instanceUrl, selectedTheme) { urlError = it }
                                     }
                                 }
                             ),
@@ -100,7 +110,7 @@ class MainActivity : ComponentActivity() {
                         Button(
                             onClick = {
                                 scope.launch {
-                                    saveAndClose(prefs, instanceUrl, selectedTheme)
+                                    saveIfValid(prefs, instanceUrl, selectedTheme) { urlError = it }
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -113,16 +123,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun saveAndClose(
+    private suspend fun saveIfValid(
         prefs: WidgetPrefs,
         url: String,
-        theme: WidgetPrefs.ThemeMode
+        theme: WidgetPrefs.ThemeMode,
+        onError: (Boolean) -> Unit
     ) {
-        if (url.isNotBlank()) {
-            val normalized = url.trimEnd('/')
-            prefs.setInstanceUrl(normalized)
+        val trimmed = url.trim()
+        if (trimmed.isNotBlank() && !trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            onError(true)
+            return
+        }
+        if (trimmed.isNotBlank()) {
+            prefs.setInstanceUrl(trimmed.trimEnd('/'))
         }
         prefs.setThemeMode(theme)
+        GlanceAppWidgetManager(this@MainActivity)
+            .getGlanceIds(SearxngWidget::class.java)
+            .forEach { id -> SearxngWidget().update(this@MainActivity, id) }
 
         val appWidgetId = intent?.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,

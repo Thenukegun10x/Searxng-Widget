@@ -17,6 +17,10 @@ object ApiClient {
     }
 
     fun create(baseUrl: String, authToken: String? = null): SearxngApi {
+        require(baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
+            "URL must start with http:// or https://"
+        }
+
         val client = if (authToken != null) {
             baseClient.newBuilder()
                 .addInterceptor(
