@@ -37,42 +37,41 @@ Privacy-respecting metasearch widget for Android home screen using SearXNG.
 ```
 app/
 ├── src/main/java/com/searxng/widget/
-│   ├── SearxngWidget.kt           # GlanceAppWidget + GlanceAppWidgetReceiver
-│   ├── MainActivity.kt            # Configuration screen
+│   ├── SearxngWidget.kt           # GlanceAppWidget + GlanceAppWidgetReceiver — renders the homescreen widget UI
+│   ├── MainActivity.kt            # Compose activity for configuring instance URL and theme
 │   │
 │   ├── ui/
-│   │   ├── theme/WidgetTheme.kt   # Light/dark color schemes
-│   │   ├── SearchBar.kt           # Glance search bar composable
-│   │   ├── SearchOverlayActivity.kt # Transparent overlay with native search input
-│   │   └── SearchActivity.kt       # [deprecated] Redirect activity (kept for reference)
+│   │   ├── theme/WidgetTheme.kt   # Light/dark widget color schemes + WidgetBackground composable
+│   │   ├── SearchBar.kt           # Glance composable — the search pill on your homescreen
+│   │   └── SearchOverlayActivity.kt # Transparent overlay with native search input, auto-focus, category tabs
 │   │
 │   ├── data/
 │   │   ├── api/
-│   │   │   ├── SearxngApi.kt      # Retrofit interface
-│   │   │   └── ApiClient.kt       # OkHttp client with configurable base URL
+│   │   │   ├── SearxngApi.kt      # Retrofit interface for the SearXNG JSON search API
+│   │   │   └── ApiClient.kt       # OkHttp client factory with URL validation and optional auth token
 │   │   ├── model/
-│   │   │   └── SearchResponse.kt  # JSON API response mapping
+│   │   │   └── SearchResponse.kt  # Gson-mapped response models for the JSON API
 │   │   └── repository/
-│   │       └── (empty)            # Not yet implemented
+│   │       └── (empty)            # Not yet implemented — API isn't wired to the widget yet
 │   │
 │   ├── preferences/
-│   │   └── WidgetPrefs.kt         # DataStore for instance URL, theme mode
+│   │   └── WidgetPrefs.kt         # DataStore-backed preferences — instance URL, theme mode, auth token
 │   │
-│   └── receiver/
 │
 ├── src/main/res/
-│   ├── drawable/                   # Widget preview icon
-│   ├── values/strings.xml
-│   ├── values/colors.xml
-│   └── xml/searxng_widget_info.xml
+│   ├── drawable/                   # Widget preview, favicon, launcher icons
+│   ├── values/strings.xml         # All user-facing strings for i18n
+│   ├── values/colors.xml          # Color resources
+│   ├── values/themes.xml          # App theme + translucent overlay theme + transparent theme
+│   └── xml/searxng_widget_info.xml # Widget provider metadata (min size, update period, configure activity)
 │
 ├── src/test/java/com/searxng/widget/
-│   ├── data/api/SearxngApiTest.kt
-│   ├── data/repository/SearchRepositoryTest.kt
-│   └── preferences/WidgetPrefsTest.kt
+│   ├── data/api/SearxngApiTest.kt       # Mockk-based API response tests
+│   ├── data/repository/SearchRepositoryTest.kt  # [deleted] — removed with SearchRepository
+│   └── preferences/WidgetPrefsTest.kt   # DataStore read/write tests with in-memory store
 │
-├── build.gradle.kts
-└── src/main/AndroidManifest.xml
+├── build.gradle.kts               # App module — dependencies, JUnit 5, glance-testing
+├── src/main/AndroidManifest.xml
 ```
 
 ## SearXNG JSON API
