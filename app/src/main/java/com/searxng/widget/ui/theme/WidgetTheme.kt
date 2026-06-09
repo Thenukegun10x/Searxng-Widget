@@ -14,6 +14,8 @@ import androidx.glance.layout.padding
 object WidgetColors {
     val primary = Color(0xFF0057B7)
     val primaryDark = Color(0xFF4FC3F7)
+    val accentLight = Color(0xFF3050FF)
+    val accentDark = Color(0xFF5588FF)
     val backgroundLight = Color(0xFFFFFFFF)
     val backgroundDark = Color(0xFF1C1B1F)
     val surfaceLight = Color(0xFFF5F5F5)

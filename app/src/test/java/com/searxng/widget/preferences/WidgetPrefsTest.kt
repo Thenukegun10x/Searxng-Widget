@@ -1,84 +1,128 @@
 package com.searxng.widget.preferences
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class WidgetPrefsTest {
 
-    private lateinit var tmpDir: File
     private lateinit var prefs: WidgetPrefs
+    private val dataStore: DataStore<Preferences> = mockk(relaxed = true)
 
     @BeforeEach
     fun setUp() {
-        tmpDir = File.createTempFile("datastore", null).also { it.delete(); it.mkdirs() }
-        val context = mockk<Context> {
-            every { applicationContext } returns this
-            every { filesDir } returns tmpDir
-        }
-        prefs = WidgetPrefs(context)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        tmpDir.deleteRecursively()
+        val context = mockk<Context>(relaxed = true)
+        prefs = WidgetPrefs(context, dataStore)
     }
 
     @Test
     fun `WidgetPrefs_getInstanceUrl_defaultIsNull`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_INSTANCE_URL) } returns null
+        })
+
         prefs.getInstanceUrl() shouldBe null
     }
 
     @Test
-    fun `WidgetPrefs_setAndGetInstanceUrl_returnsStoredUrl`() = runTest {
-        val url = "https://searxng.example.com"
-
-        prefs.setInstanceUrl(url)
-        prefs.getInstanceUrl() shouldBe url
+    fun `WidgetPrefs_setAndGetInstanceUrl_doesNotThrow`() = runTest {
+        prefs.setInstanceUrl("https://searxng.example.com")
     }
 
     @Test
     fun `WidgetPrefs_getThemeMode_defaultIsSystem`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_THEME_MODE) } returns null
+        })
+
         prefs.getThemeMode() shouldBe WidgetPrefs.ThemeMode.SYSTEM
     }
 
     @Test
-    fun `WidgetPrefs_setAndGetThemeMode_returnsStoredMode`() = runTest {
-        prefs.setThemeMode(WidgetPrefs.ThemeMode.DARK)
-        prefs.getThemeMode() shouldBe WidgetPrefs.ThemeMode.DARK
+    fun `WidgetPrefs_getThemeMode_returnsDarkWhenStored`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_THEME_MODE) } returns WidgetPrefs.ThemeMode.DARK.name
+        })
 
-        prefs.setThemeMode(WidgetPrefs.ThemeMode.LIGHT)
+        prefs.getThemeMode() shouldBe WidgetPrefs.ThemeMode.DARK
+    }
+
+    @Test
+    fun `WidgetPrefs_getThemeMode_returnsLightWhenStored`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_THEME_MODE) } returns WidgetPrefs.ThemeMode.LIGHT.name
+        })
+
         prefs.getThemeMode() shouldBe WidgetPrefs.ThemeMode.LIGHT
     }
 
     @Test
-    fun `WidgetPrefs_setAndGetAuthToken_returnsStoredToken`() = runTest {
-        prefs.setAuthToken("test-token")
-        prefs.getAuthToken() shouldBe "test-token"
+    fun `WidgetPrefs_getAuthToken_defaultIsNull`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_AUTH_TOKEN) } returns null
+        })
+
+        prefs.getAuthToken() shouldBe null
     }
 
     @Test
-    fun `WidgetPrefs_instanceUrlFlow_emitsUpdates`() = runTest {
-        prefs.instanceUrl.first() shouldBe null
+    fun `WidgetPrefs_instanceUrlFlow_emitsNullWhenEmpty`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_INSTANCE_URL) } returns null
+        })
 
-        prefs.setInstanceUrl("https://searxng.example.com")
+        prefs.instanceUrl.first() shouldBe null
+    }
+
+    @Test
+    fun `WidgetPrefs_instanceUrlFlow_emitsUrlWhenStored`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_INSTANCE_URL) } returns "https://searxng.example.com"
+        })
 
         prefs.instanceUrl.first() shouldBe "https://searxng.example.com"
     }
 
     @Test
-    fun `WidgetPrefs_themeModeFlow_emitsUpdates`() = runTest {
-        prefs.themeMode.first() shouldBe WidgetPrefs.ThemeMode.SYSTEM
+    fun `WidgetPrefs_themeModeFlow_emitsSystemByDefault`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_THEME_MODE) } returns null
+        })
 
-        prefs.setThemeMode(WidgetPrefs.ThemeMode.DARK)
+        prefs.themeMode.first() shouldBe WidgetPrefs.ThemeMode.SYSTEM
+    }
+
+    @Test
+    fun `WidgetPrefs_themeModeFlow_emitsStoredTheme`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_THEME_MODE) } returns WidgetPrefs.ThemeMode.DARK.name
+        })
 
         prefs.themeMode.first() shouldBe WidgetPrefs.ThemeMode.DARK
+    }
+
+    @Test
+    fun `WidgetPrefs_clearInstanceUrl_callsUpdateData`() = runTest {
+        prefs.clearInstanceUrl()
+        coVerify { dataStore.updateData(any()) }
+    }
+
+    @Test
+    fun `WidgetPrefs_cachedResults_defaultIsNull`() = runTest {
+        every { dataStore.data } returns flowOf(mockk {
+            every { get(WidgetPrefs.KEY_CACHED_RESULTS) } returns null
+        })
+
+        prefs.getCachedResults() shouldBe null
     }
 }

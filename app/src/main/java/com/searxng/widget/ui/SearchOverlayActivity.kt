@@ -8,9 +8,13 @@ import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.SslErrorHandler
+import android.net.http.SslError
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -44,6 +48,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.searxng.widget.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -111,7 +117,8 @@ class SearchOverlayActivity : ComponentActivity() {
                 SearxngResultsView(
                     searchUrl = searchUrl,
                     isDark = isDark,
-                    onBack = { showResults = false }
+                    onBack = { showResults = false },
+                    instanceUrl = instanceUrl
                 )
             } else {
                 val scrimColor = if (isDark) Color(0xE61E1E22) else Color(0xE6F2F5F8)
@@ -188,12 +195,12 @@ fun SearchOverlayContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = "SearXNG",
-            color = titleColor,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
+                Text(
+                    text = stringResource(R.string.app_name),
+                    color = titleColor,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
         OutlinedTextField(
             value = query,
@@ -202,7 +209,7 @@ fun SearchOverlayContent(
                 .fillMaxWidth()
                 .focusRequester(focusRequester),
             placeholder = {
-                Text("Search for...", color = placeholderColor, fontSize = 14.sp)
+                Text(stringResource(R.string.search_for), color = placeholderColor, fontSize = 14.sp)
             },
             singleLine = true,
             leadingIcon = {
@@ -297,7 +304,8 @@ fun CategoryChip(
 fun SearxngResultsView(
     searchUrl: String,
     isDark: Boolean,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    instanceUrl: String? = null
 ) {
     var isLoading by remember { mutableStateOf(true) }
     var progress by remember { mutableIntStateOf(0) }
@@ -335,6 +343,33 @@ fun SearxngResultsView(
                         override fun onPageFinished(view: WebView?, url: String?) {
                             isLoading = false
                         }
+
+                        override fun onReceivedError(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                            error: WebResourceError?
+                        ) {
+                            isLoading = false
+                        }
+
+                        @Suppress("DEPRECATION")
+                        override fun onReceivedError(
+                            view: WebView?,
+                            errorCode: Int,
+                            description: String?,
+                            failingUrl: String?
+                        ) {
+                            isLoading = false
+                        }
+
+                        override fun onReceivedSslError(
+                            view: WebView?,
+                            handler: SslErrorHandler?,
+                            error: SslError?
+                        ) {
+                            handler?.cancel()
+                            isLoading = false
+                        }
                     }
                     webChromeClient = object : WebChromeClient() {
                         override fun onProgressChanged(view: WebView?, newProgress: Int) {
@@ -343,7 +378,7 @@ fun SearxngResultsView(
                     }
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                     if (isDark && Build.VERSION.SDK_INT >= 29) {
                         @Suppress("DEPRECATION")
                         settings.forceDark = WebSettings.FORCE_DARK_ON

@@ -1,18 +1,38 @@
 package com.searxng.widget
 
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,7 +77,7 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = "SearXNG Widget",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -68,11 +88,11 @@ class MainActivity : ComponentActivity() {
                                 instanceUrl = it
                                 urlError = false
                             },
-                            label = { Text("Instance URL") },
-                            placeholder = { Text("https://searxng.example.com") },
+                            label = { Text(stringResource(R.string.instance_url_label)) },
+                            placeholder = { Text(stringResource(R.string.instance_url_hint)) },
                             isError = urlError,
                             supportingText = if (urlError) {
-                                { Text("Enter a valid URL starting with http:// or https://") }
+                                { Text(stringResource(R.string.invalid_url)) }
                             } else null,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -90,7 +110,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         Text(
-                            text = "Theme",
+                            text = stringResource(R.string.theme_label),
                             style = MaterialTheme.typography.labelLarge
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -115,7 +135,7 @@ class MainActivity : ComponentActivity() {
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Save & Close")
+                            Text(stringResource(R.string.save_close))
                         }
                     }
                 }
@@ -134,7 +154,9 @@ class MainActivity : ComponentActivity() {
             onError(true)
             return
         }
-        if (trimmed.isNotBlank()) {
+        if (trimmed.isBlank()) {
+            prefs.clearInstanceUrl()
+        } else {
             prefs.setInstanceUrl(trimmed.trimEnd('/'))
         }
         prefs.setThemeMode(theme)

@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.cornerRadius
@@ -19,13 +20,15 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.searxng.widget.R
+import com.searxng.widget.ui.theme.WidgetColors
 
 @Composable
 fun SearchBar(instanceUrl: String, isDark: Boolean, isCompact: Boolean = false) {
-    // Colors extracted from MHTML CSS variables
-    val searchBg = if (isDark) Color(0xFF2B2E36) else Color(0xFFFFFFFF)
-    val placeholderColor = if (isDark) Color(0xFF888888) else Color(0xFF888888)
-    val accent = if (isDark) Color(0xFF5588FF) else Color(0xFF3050FF)
+    val context = LocalContext.current
+    val searchBg = if (isDark) Color(0xFF2B2E36) else WidgetColors.backgroundLight
+    val placeholderColor = WidgetColors.textSecondary
+    val accent = if (isDark) WidgetColors.accentDark else WidgetColors.accentLight
 
     Row(
         modifier = GlanceModifier
@@ -41,16 +44,14 @@ fun SearchBar(instanceUrl: String, isDark: Boolean, isCompact: Boolean = false) 
             ),
         verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
-        // Magnifying glass icon (using Unicode)
         Text(
             text = "\uD83D\uDD0D",
             style = TextStyle(fontSize = 16.sp)
         )
         Spacer(modifier = GlanceModifier.width(8.dp))
 
-        // Placeholder text matching SearXNG
         Text(
-            text = "Search for...",
+            text = context.getString(R.string.search_hint),
             style = TextStyle(
                 color = ColorProvider(placeholderColor),
                 fontSize = if (isCompact) 13.sp else 14.sp
@@ -58,7 +59,6 @@ fun SearchBar(instanceUrl: String, isDark: Boolean, isCompact: Boolean = false) 
             modifier = GlanceModifier.defaultWeight()
         )
 
-        // Submit arrow indicator
         Text(
             text = "\u25B6",
             style = TextStyle(
